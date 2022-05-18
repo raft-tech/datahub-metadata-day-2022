@@ -1,0 +1,74 @@
+namespace com.linkedin.dashboard
+
+import com.linkedin.common.AccessLevel
+import com.linkedin.common.ChangeAuditStamps
+import com.linkedin.common.ChartUrn
+import com.linkedin.common.Time
+import com.linkedin.common.Url
+import com.linkedin.common.CustomProperties
+import com.linkedin.common.ExternalReference
+
+/**
+ * Information about a dashboard
+ */
+@Aspect = {
+  "name": "dashboardInfo"
+}
+record DashboardInfo includes CustomProperties, ExternalReference {
+
+  /**
+   * Title of the dashboard
+   */
+  @Searchable = {
+    "fieldType": "TEXT_PARTIAL",
+    "enableAutocomplete": true,
+    "boostScore": 10.0
+  }
+  title: string
+
+  /**
+   * Detailed description about the dashboard
+   */
+  @Searchable = {
+    "fieldType": "TEXT",
+    "hasValuesFieldName": "hasDescription"
+  }
+  description: string
+
+  /**
+   * Charts in a dashboard
+   */
+  @Relationship = {
+    "/*": {
+      "name": "Contains",
+      "entityTypes": [ "chart" ],
+      "isLineage": true
+    }
+  }
+  charts: array[ChartUrn] = [ ]
+
+  /**
+   * Captures information about who created/last modified/deleted this dashboard and when
+   */
+  lastModified: ChangeAuditStamps
+
+  /**
+   * URL for the dashboard. This could be used as an external link on DataHub to allow users access/view the dashboard
+   */
+  dashboardUrl: optional Url
+
+  /**
+   * Access level for the dashboard
+   */
+  @Searchable = {
+    "fieldType": "KEYWORD",
+    "addToFilters": true,
+    "filterNameOverride": "Access Level"
+  }
+  access: optional AccessLevel
+
+  /**
+   * The time when this dashboard last refreshed
+   */
+  lastRefreshed: optional Time
+}

@@ -1,0 +1,40 @@
+namespace com.linkedin.dataset
+
+import com.linkedin.common.AuditStamp
+import com.linkedin.common.DatasetUrn
+
+/**
+ * Upstream lineage information about a dataset including the source reporting the lineage
+ */
+record Upstream {
+
+  /**
+   * Audit stamp containing who reported the lineage and when.
+   * WARNING: this field is deprecated and may be removed in a future release.
+   */
+  @deprecated = "we no longer associate a timestamp per upstream edge"
+  auditStamp: AuditStamp = {
+    "time": 0,
+    "actor": "urn:li:corpuser:unknown"
+  }
+
+  /**
+   * The upstream dataset the lineage points to
+   */
+  @Relationship = {
+    "name": "DownstreamOf",
+    "entityTypes": [ "dataset" ],
+    "isLineage": true
+  }
+  @Searchable = {
+    "fieldName": "upstreams",
+    "fieldType": "URN",
+    "queryByDefault": false
+  }
+  dataset: DatasetUrn
+
+  /**
+   * The type of the lineage
+   */
+  type: DatasetLineageType
+}

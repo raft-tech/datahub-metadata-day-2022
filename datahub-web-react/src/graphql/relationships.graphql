@@ -1,0 +1,25 @@
+fragment fullRelationshipResults on EntityRelationshipsResult {
+    start
+    count
+    total
+    relationships {
+        type
+        direction
+        entity {
+            ...relationshipFields
+        }
+    }
+}
+
+fragment leafRelationshipResults on EntityRelationshipsResult {
+    start
+    count
+    total
+    relationships {
+        type
+        entity {
+            urn
+            type
+        }
+    }
+}

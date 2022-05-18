@@ -1,0 +1,113 @@
+namespace com.linkedin.datajob
+
+import com.linkedin.common.DatasetUrn
+import com.linkedin.common.DataJobUrn
+import com.linkedin.dataset.FineGrainedLineage
+import com.linkedin.common.Urn
+
+/**
+ * Information about the inputs and outputs of a Data processing job
+ */
+@Aspect = {
+  "name": "dataJobInputOutput"
+}
+record DataJobInputOutput {
+
+  /**
+   * Input datasets consumed by the data job during processing
+   */
+  @Relationship = {
+    "/*": {
+      "name": "Consumes",
+      "entityTypes": [ "dataset" ],
+      "isLineage": true
+    }
+  }
+  @Searchable = {
+    "/*": {
+      "fieldName": "inputs",
+      "fieldType": "URN",
+      "numValuesFieldName": "numInputDatasets",
+      "queryByDefault": false
+    }
+  }
+  inputDatasets: array[DatasetUrn]
+
+  /**
+   * Output datasets produced by the data job during processing
+   */
+  @Relationship = {
+    "/*": {
+      "name": "Produces",
+      "entityTypes": [ "dataset" ],
+      "isUpstream": false,
+      "isLineage": true
+    }
+  }
+  @Searchable = {
+    "/*": {
+      "fieldName": "outputs",
+      "fieldType": "URN",
+      "numValuesFieldName": "numOutputDatasets",
+      "queryByDefault": false
+    }
+  }
+  outputDatasets: array[DatasetUrn]
+
+  /**
+   * Input datajobs that this data job depends on
+   */
+  @Relationship = {
+    "/*": {
+      "name": "DownstreamOf",
+      "entityTypes": [ "dataJob" ],
+      "isLineage": true
+    }
+  }
+  inputDatajobs: optional array[DataJobUrn] 
+
+  /**
+  * Fields of the input datasets used by this job
+  */
+  @Relationship = {
+    "/*": {
+      "name": "Consumes",
+      "entityTypes": [ "schemaField" ]
+    }
+  }  
+  @Searchable = {
+    "/*": {
+      "fieldName": "inputFields",
+      "fieldType": "URN",
+      "numValuesFieldName": "numInputFields",
+      "queryByDefault": false
+    }
+  }
+  inputDatasetFields: optional array[Urn]
+
+  /**
+  * Fields of the output datasets this job writes to
+  */
+  @Relationship = {
+    "/*": {
+      "name": "Produces",
+      "entityTypes": [ "schemaField" ]
+    }
+  }
+  @Searchable = {
+    "/*": {
+      "fieldName": "outputFields",
+      "fieldType": "URN",
+      "numValuesFieldName": "numOutputFields",
+      "queryByDefault": false
+    }
+  }
+  outputDatasetFields: optional array[Urn]
+
+  /**
+   * Fine-grained column-level lineages
+   */
+   // No @Relationship specified here; 
+   // all Produces/Consumes relations are effectively determined by the input/output datasets/datasetFields
+  fineGrainedLineages: optional array[FineGrainedLineage]
+}

@@ -1,0 +1,23 @@
+apply plugin: 'pegasus'
+
+dependencies {
+  compile spec.product.pegasus.data
+  compile spec.product.pegasus.generator
+  compile project(path: ':metadata-models')
+  compile externalDependency.lombok
+  compile externalDependency.guava
+  compile externalDependency.jacksonDataBind
+  compile externalDependency.jacksonDataFormatYaml
+  compile externalDependency.reflections
+  dataModel project(':li-utils')
+  annotationProcessor externalDependency.lombok
+
+  compile externalDependency.mavenArtifact
+
+  testCompile project(':test-models')
+  testCompile externalDependency.testng
+  testCompile externalDependency.mockito
+  testCompile externalDependency.mockitoInline
+
+}
+compileTestJava.dependsOn tasks.getByPath(':entity-registry:custom-test-model:modelDeploy')

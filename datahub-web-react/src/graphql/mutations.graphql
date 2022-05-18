@@ -1,0 +1,55 @@
+mutation removeTag($input: TagAssociationInput!) {
+    removeTag(input: $input)
+}
+
+mutation addTag($input: TagAssociationInput!) {
+    addTag(input: $input)
+}
+
+mutation removeTerm($input: TermAssociationInput!) {
+    removeTerm(input: $input)
+}
+
+mutation addTerm($input: TermAssociationInput!) {
+    addTerm(input: $input)
+}
+
+mutation addLink($input: AddLinkInput!) {
+    addLink(input: $input)
+}
+
+mutation removeLink($input: RemoveLinkInput!) {
+    removeLink(input: $input)
+}
+
+mutation addOwner($input: AddOwnerInput!) {
+    addOwner(input: $input)
+}
+
+mutation removeOwner($input: RemoveOwnerInput!) {
+    removeOwner(input: $input)
+}
+
+mutation updateDescription($input: DescriptionUpdateInput!) {
+    updateDescription(input: $input)
+}
+
+mutation setDomain($entityUrn: String!, $domainUrn: String!) {
+    setDomain(entityUrn: $entityUrn, domainUrn: $domainUrn)
+}
+
+mutation unsetDomain($entityUrn: String!) {
+    unsetDomain(entityUrn: $entityUrn)
+}
+
+mutation setTagColor($urn: String!, $colorHex: String!) {
+    setTagColor(urn: $urn, colorHex: $colorHex)
+}
+
+mutation updateDeprecation($input: UpdateDeprecationInput!) {
+    updateDeprecation(input: $input)
+}
+
+mutation visualizeWithSuperset($input: VisualizeWithSupersetInput!) {
+    visualizeWithSuperset(input: $input)
+}
