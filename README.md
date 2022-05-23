@@ -23,6 +23,116 @@ HOSTED_DOCS_ONLY-->
 </p>
 <!-- -->
 
+
+# Raft's Submission for Metadata Day 2022
+
+This repository is a mirror of the Datahub repo containing our modifications to support single-click data products in Superset. The following changes were made:
+- An additional frontend componenent was created: `datahub-web-react/src/app/entity/shared/containers/profile/sidebar/SidebarVisualizeWithSupersetSection.tsx`
+- The frontend component was added to `datahub-web-react/src/app/entity/dataset/DatasetEntity.tsx`
+- An additional GraphQL mutation was added to `datahub-graphql-core/src/main/resources/entity.graphql` and `datahub-web-react/src/graphql/mutations.graphql`
+- A resolver for the GraphQL mutation was added to `datahub-graphql-core/src/main/java/com/linkedin/datahub/graphql/resolvers/mutate/VisualizeWithSupersetResolver.java` and registered in `datahub-web-react/src/graphql/mutations.graphql`
+
+## Deployment
+
+For this hackathon, we deployed services using Kubernetes. The following components should be present in order to run the hackathon submission:
+* Kafka Zookeeper (we used 1)
+* Kafka Brokers (we used 3)
+* Confluent Schema Registry
+* Elasticsearch
+* Trino, with an additional catalog registered:
+    ```
+    additionalCatalogs:
+      postgres: |
+        connector.name=postgresql
+        connection-url=jdbc:postgresql://postgres:5432/postgres
+        connection-user=datahub
+        connection-password=datahub
+    ````
+* Apache Superset
+* Redis
+* Postgres
+
+The `values.yaml` from [acryldata/datahub-helm](https://github.com/acryldata/datahub-helm/blob/master/charts/datahub/values.yaml) was modified to add the following environment variables to `datahub-gms`:
+```yaml
+    - name: SUPERSET_PASSWORD
+      value: "admin"
+    - name: SUPERSET_USERNAME 
+      value: "admin"
+    - name: SUPERSET_ENDPOINT
+      value: "http://superset:8088"
+    - name: SUPERSET_EXTERNAL_ENDPOINT
+      value: "http://localhost:8088"
+    - name: SUPERSET_PROVIDER
+      value: "db"
+    - name: DATASOURCE_PASSWORD
+      value: ""
+    - name: DATASOURCE_USERNAME 
+      value: "trino"
+    - name: DATASOURCE_HOST_AND_PORT
+      value: "trino:8080"
+```
+
+## Running the demo
+
+1. Once the demo is deployed, download [AIS_2020_01_01-first-10000.csv](https://github.com/raft-tech/datahub-metadata-day-2022/files/8754506/AIS_2020_01_01-first-10000.csv).
+2. Copy the file into the Postgres Pod (or port-forward locally and run the following command using `psql`)
+3. Create a file with the following SQL statements:
+    ```sql
+    CREATE TABLE ais_noaa_2020
+    (mmsi varchar,
+    basedatetime timestamp ,
+    lat numeric(10, 6),
+    lon numeric(10, 6),
+    sog numeric(8, 2),
+    cog numeric(8, 2),
+    heading numeric(6, 0),
+    vesselname varchar,
+    imo varchar,
+    callsign varchar,
+    vesseltype numeric(6, 0),
+    status numeric(6, 0),
+    length numeric(6, 2),
+    width numeric(6, 2),
+    draft numeric(6, 2),
+    cargo numeric(6, 0),
+    transceiverclass varchar);
+    
+    copy ais_noaa_2020
+    FROM '/tmp/AIS_2020_01_01-first-10000.csv'
+    DELIMITER ','
+    CSV HEADER;
+    ```
+4. On the pod or locally, run:
+    ```
+    psql -U postgres -d postgres -W -f <path-to-sql-create>
+    ```
+5. In Datahub, create the Trino ingestion source:
+    ```yaml
+    source:
+      type: trino
+      config:
+        host_port: 'trino:8080'
+        username: trino
+        database: postgres
+        # Supported environment values: https://datahubproject.io/docs/graphql/enums/#fabrictype
+        env: DEV # Change if using a different environment.  
+        # Enables profiling of SQL tables (row count, column count, etc.)
+        # More information about profile: https://datahubproject.io/docs/metadata-ingestion/docs/dev_guides/sql_profiles
+        profiling:
+          enabled: true
+          include_field_median_value: false
+    
+    sink:
+      type: datahub-rest
+      config:
+        server: 'http://datahub-gms:8080'
+    ```    
+6. Run the ingestion.
+7. Once it completes, port-forward Superset.
+8. Navigate to the `ais_noaa_2020` dataset in Datahub. Click the `Visualize with Superset` button. You should momentarily be redirected to Superset's SQL Editor page, with a pre-populated query to the dataset.
+    
+    
+
 # DataHub: The Metadata Platform for the Modern Data Stack
 ## Built with ❤️ by <img src="https://datahubproject.io/img/acryl-logo-light-mark.png" width="25"/> [Acryl Data](https://acryldata.io) and <img src="https://datahubproject.io/img/LI-In-Bug.png" width="25"/> [LinkedIn](https://engineering.linkedin.com)
 [![Version](https://img.shields.io/github/v/release/datahub-project/datahub?include_prereleases)](https://github.com/datahub-project/datahub/releases/latest)
@@ -164,3 +274,4 @@ See the full list [here](docs/links.md).
 ## License
 
 [Apache License 2.0](./LICENSE).
+
